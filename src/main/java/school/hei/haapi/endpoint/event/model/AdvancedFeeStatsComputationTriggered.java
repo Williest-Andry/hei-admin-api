@@ -20,7 +20,7 @@ public class AdvancedFeeStatsComputationTriggered extends PojaEvent {
   private LocalDateTime beginDatetime;
 
   public LocalDateTime getEndDatetime() {
-    LocalDateTime endOfDay = now.toLocalDate().atTime(MAX);
+    LocalDateTime endOfDay = now.toLocalDate().atTime(23, 59, 59);
     return now.isBefore(endOfDay) ? now : endOfDay;
   }
 
