@@ -164,9 +164,8 @@ class GradeIT extends FacadeITMockedThirdParties {
     TeachingApi managerApi = new TeachingApi(anApiClient(MANAGER1_TOKEN));
     AwardedCourse awardedCourse = awardedCourse1();
 
-    List<StudentGrade> finalGradesForCourse = managerApi.getStudentsFinalGradesByCourseId(
-            awardedCourse.getCourse().getId(), ""
-    );
+    List<StudentGrade> finalGradesForCourse =
+        managerApi.getStudentsFinalGradesByCourseId(awardedCourse.getCourse().getId(), "");
 
     assertTrue(true);
   }

@@ -14,7 +14,7 @@ import school.hei.haapi.endpoint.rest.model.Student;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class StudentGrade{
-    private Student student;
-    private Grade grade;
+public class StudentGrade {
+  private Student student;
+  private Grade grade;
 }
