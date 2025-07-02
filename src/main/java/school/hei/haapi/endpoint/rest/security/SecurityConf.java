@@ -1,13 +1,5 @@
 package school.hei.haapi.endpoint.rest.security;
 
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.OPTIONS;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-import static school.hei.haapi.endpoint.rest.security.model.Role.*;
-
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,39 +21,43 @@ import school.hei.haapi.model.exception.ForbiddenException;
 import school.hei.haapi.service.AwardedCourseService;
 import school.hei.haapi.service.UserService;
 
+import static org.springframework.http.HttpMethod.*;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static school.hei.haapi.endpoint.rest.security.model.Role.*;
+
 @Configuration
 @Slf4j
 @EnableWebSecurity
 public class SecurityConf {
 
-  private static final String AUTHORIZATION_HEADER = "Authorization";
-  private static final String STUDENT_COURSE = "/students/*/courses";
-  private final AwardedCourseService awardedCourseService;
-  private final UserService userService;
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String STUDENT_COURSE = "/students/*/courses";
+    private final AwardedCourseService awardedCourseService;
+    private final UserService userService;
 
-  private final AbstractUserDetailsAuthenticationProvider authProvider;
-  private final HandlerExceptionResolver exceptionResolver;
+    private final AbstractUserDetailsAuthenticationProvider authProvider;
+    private final HandlerExceptionResolver exceptionResolver;
 
-  public SecurityConf(
-      CasdoorAuthProvider authProvider,
-      // InternalToExternalErrorHandler behind
-      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver,
-      AwardedCourseService awardedCourseService,
-      UserService userService) {
-    this.authProvider = authProvider;
-    this.exceptionResolver = exceptionResolver;
-    this.awardedCourseService = awardedCourseService;
-    this.userService = userService;
-  }
+    public SecurityConf(
+            CasdoorAuthProvider authProvider,
+            // InternalToExternalErrorHandler behind
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver,
+            AwardedCourseService awardedCourseService,
+            UserService userService) {
+        this.authProvider = authProvider;
+        this.exceptionResolver = exceptionResolver;
+        this.awardedCourseService = awardedCourseService;
+        this.userService = userService;
+    }
 
-  @Bean
-  public AuthenticationManager authenticationManager() {
-    return new ProviderManager(authProvider);
-  }
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(authProvider);
+    }
 
-  @Bean
-  public SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
-    // @formatter:off
+    @Bean
+    public SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+        // @formatter:off
     AntPathRequestMatcher nonAccessibleBySuspendedUserPath =
         antMatcher(GET, "/non-accessible-by-suspended");
     httpSecurity
@@ -198,7 +194,7 @@ public class SecurityConf {
                     antMatcher(GET, "/courses"),
                     antMatcher(PUT, "/courses"),
                     antMatcher(PUT, "/courses/**"),
-                    antMatcher(GET, "/courses/*"),
+                    antMatcher(GET, "/courses/**"),
                     antMatcher(GET, "/courses/*/exams"),
                     antMatcher(GET, "/courses/*/exams/*"),
                     antMatcher(GET, "/courses/*/exams/*/details"),
@@ -690,7 +686,7 @@ public class SecurityConf {
                     .hasAnyRole(MANAGER.getRole(), ADMIN.getRole())
                     .requestMatchers(PUT, "/courses/**")
                     .hasAnyRole(MANAGER.getRole(), ADMIN.getRole())
-                    .requestMatchers(GET, "/courses/*")
+                    .requestMatchers(GET, "/courses/**")
                     .authenticated()
                     .requestMatchers(GET, "/courses/*/exams")
                     .authenticated()

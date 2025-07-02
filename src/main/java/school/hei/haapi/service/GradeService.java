@@ -3,9 +3,11 @@ package school.hei.haapi.service;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,66 +25,70 @@ import school.hei.haapi.repository.dao.GradeDao;
 @Service
 @AllArgsConstructor
 public class GradeService {
-  private final GradeRepository gradeRepository;
-  private final GradeDao gradeDao;
-  private final UserService userService;
+    private final GradeRepository gradeRepository;
+    private final GradeDao gradeDao;
+    private final UserService userService;
 
-  public Grade getGradeByExamIdAndStudentId(String examId, String studentId) {
-    return gradeRepository
-        .getGradeByExamIdAndStudentId(examId, studentId)
-        .orElseThrow(() -> new NotFoundException("Grade not found"));
-  }
-
-  public Grade getById(String id) {
-    return gradeRepository
-        .findById(id)
-        .orElseThrow(() -> new NotFoundException("grade with id " + id + " not found"));
-  }
-
-  private Grade checkAndCreateOrModifyGrade(Grade grade) {
-    Optional<Grade> getGrade =
-        gradeRepository.findByExamIdAndStudentId(
-            grade.getExam().getId(), grade.getStudent().getId());
-    if (getGrade.isPresent()) {
-      Grade presentGrade = getGrade.get();
-      presentGrade.setScore(grade.getScore());
-      return presentGrade;
+    public Grade getGradeByExamIdAndStudentId(String examId, String studentId) {
+        return gradeRepository
+                .getGradeByExamIdAndStudentId(examId, studentId)
+                .orElseThrow(() -> new NotFoundException("Grade not found"));
     }
-    if (userService.getByGroupId(grade.getExam().getAwardedCourse().getGroup().getId()).stream()
-        .map(User::getId)
-        .noneMatch(Predicate.isEqual(grade.getStudent().getId()))) {
-      throw new BadRequestException(
-          String.format(
-              "Student with id: %s not in the Exam: %s",
-              grade.getStudent().getId(), grade.getExam().getId()));
+
+    public Grade getById(String id) {
+        return gradeRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("grade with id " + id + " not found"));
     }
-    return grade;
-  }
 
-  @Transactional
-  public List<Grade> crupdateParticipantGrade(List<Grade> grades) {
-    return gradeRepository.saveAll(
-        grades.stream().map(this::checkAndCreateOrModifyGrade).collect(toUnmodifiableList()));
-  }
+    private Grade checkAndCreateOrModifyGrade(Grade grade) {
+        Optional<Grade> getGrade =
+                gradeRepository.findByExamIdAndStudentId(
+                        grade.getExam().getId(), grade.getStudent().getId());
+        if (getGrade.isPresent()) {
+            Grade presentGrade = getGrade.get();
+            presentGrade.setScore(grade.getScore());
+            return presentGrade;
+        }
+        if (userService.getByGroupId(grade.getExam().getAwardedCourse().getGroup().getId()).stream()
+                .map(User::getId)
+                .noneMatch(Predicate.isEqual(grade.getStudent().getId()))) {
+            throw new BadRequestException(
+                    String.format(
+                            "Student with id: %s not in the Exam: %s",
+                            grade.getStudent().getId(), grade.getExam().getId()));
+        }
+        return grade;
+    }
 
-  public List<Grade> getParticipantsGradeForExam(
-      String exam_id, PageFromOne page, BoundedPageSize pageSize) {
-    return gradeDao.getGradesByExamId(
-        exam_id,
-        (page == null || pageSize == null)
-            ? Pageable.unpaged()
-            : PageRequest.of((page.getValue() - 1), pageSize.getValue()));
-  }
+    @Transactional
+    public List<Grade> crupdateParticipantGrade(List<Grade> grades) {
+        return gradeRepository.saveAll(
+                grades.stream().map(this::checkAndCreateOrModifyGrade).collect(toUnmodifiableList()));
+    }
 
-  private double getExamAverageGrade(String examId) {
-    var averageOfGradeResult =
-        gradeDao.getGradesByExamId(examId).stream().mapToDouble(Grade::getScore).average();
-    if (averageOfGradeResult.isEmpty())
-      throw new NotFoundException("Exam with id " + examId + " do not have a score");
-    return averageOfGradeResult.getAsDouble();
-  }
+    public List<Grade> getParticipantsGradeForExam(
+            String exam_id, PageFromOne page, BoundedPageSize pageSize) {
+        return gradeDao.getGradesByExamId(
+                exam_id,
+                (page == null || pageSize == null)
+                        ? Pageable.unpaged()
+                        : PageRequest.of((page.getValue() - 1), pageSize.getValue()));
+    }
 
-  public ExamGradeStats getExamGradeStats(String examId) {
-    return new ExamGradeStats().average(getExamAverageGrade(examId));
-  }
+    private double getExamAverageGrade(String examId) {
+        var averageOfGradeResult =
+                gradeDao.getGradesByExamId(examId).stream().mapToDouble(Grade::getScore).average();
+        if (averageOfGradeResult.isEmpty())
+            throw new NotFoundException("Exam with id " + examId + " do not have a score");
+        return averageOfGradeResult.getAsDouble();
+    }
+
+    public ExamGradeStats getExamGradeStats(String examId) {
+        return new ExamGradeStats().average(getExamAverageGrade(examId));
+    }
+
+    public List<Grade> getFinalGradesByCourseId(String courseId, String groupRef) {
+        return gradeDao.getFinalGradesByCourseId(courseId, groupRef);
+    }
 }

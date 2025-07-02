@@ -781,20 +781,20 @@ paths:
     get:
       tags:
         - Teaching
-      summary: Get students grade for exams in a specific course
+      summary: Get students final grades (all exams combined) for a specific course
       parameters:
         - $ref: '#/components/parameters/PathCourseId'
         - $ref: '#/components/parameters/GroupRef'
-      operationId: getCourseStudentsGrade
+      operationId: getStudentsFinalGradesByCourseId
       responses:
         '200':
-          description: Student list with grade for this course
+          description: Student list with their final grade for this course
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StudentIdentifierGrade'
+                  $ref: '#/components/schemas/StudentGrade'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -6436,15 +6436,6 @@ components:
           type: number
           format: double
           example: 12.5
-    StudentIdentifierGrade:
-      type: object
-      properties:
-        weighted_average:
-          type: number
-          format: double
-          example: 12.5
-        student:
-          $ref: '#/components/schemas/UserIdentifier'
     CrupdateGrade:
       type: object
       properties:

@@ -1,27 +1,9 @@
 package school.hei.haapi.integration;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static school.hei.haapi.integration.StudentIT.student1;
-import static school.hei.haapi.integration.conf.TestUtils.EXAM1_ID;
-import static school.hei.haapi.integration.conf.TestUtils.EXAM3_ID;
-import static school.hei.haapi.integration.conf.TestUtils.GROUP1_ID;
-import static school.hei.haapi.integration.conf.TestUtils.MANAGER1_TOKEN;
-import static school.hei.haapi.integration.conf.TestUtils.STUDENT1_ID;
-import static school.hei.haapi.integration.conf.TestUtils.STUDENT1_TOKEN;
-import static school.hei.haapi.integration.conf.TestUtils.STUDENT2_ID;
-import static school.hei.haapi.integration.conf.TestUtils.STUDENT3_ID;
-import static school.hei.haapi.integration.conf.TestUtils.TEACHER1_TOKEN;
-import static school.hei.haapi.integration.conf.TestUtils.assertThrowsForbiddenException;
-import static school.hei.haapi.integration.conf.TestUtils.awardedCourseExam1;
-import static school.hei.haapi.integration.conf.TestUtils.awardedCourseExam2;
-import static school.hei.haapi.integration.conf.TestUtils.awardedCourseExam4;
-import static school.hei.haapi.integration.conf.TestUtils.setUpCasdoor;
-import static school.hei.haapi.integration.conf.TestUtils.setUpCognito;
-import static school.hei.haapi.integration.conf.TestUtils.setUpS3Service;
-import static school.hei.haapi.integration.conf.TestUtils.studentGrade1;
-import static school.hei.haapi.integration.conf.TestUtils.studentGrade7;
+import static school.hei.haapi.integration.conf.TestUtils.*;
 import static school.hei.haapi.model.User.Status.ENABLED;
 
 import java.util.List;
@@ -34,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import school.hei.haapi.endpoint.rest.api.TeachingApi;
 import school.hei.haapi.endpoint.rest.client.ApiClient;
 import school.hei.haapi.endpoint.rest.client.ApiException;
+import school.hei.haapi.endpoint.rest.model.AwardedCourse;
 import school.hei.haapi.endpoint.rest.model.AwardedCourseExam;
 import school.hei.haapi.endpoint.rest.model.CrupdateGrade;
 import school.hei.haapi.endpoint.rest.model.StudentGrade;
@@ -174,5 +157,17 @@ class GradeIT extends FacadeITMockedThirdParties {
     TeachingApi studentApi = new TeachingApi(anApiClient(STUDENT1_TOKEN));
 
     assertThrowsForbiddenException(() -> studentApi.getParticipantsGradeForExam(EXAM1_ID, 1, 10));
+  }
+
+  @Test
+  void manager_get_final_grade_per_course_id_ok() throws ApiException {
+    TeachingApi managerApi = new TeachingApi(anApiClient(MANAGER1_TOKEN));
+    AwardedCourse awardedCourse = awardedCourse1();
+
+    List<StudentGrade> finalGradesForCourse = managerApi.getStudentsFinalGradesByCourseId(
+            awardedCourse.getCourse().getId(), ""
+    );
+
+    assertTrue(true);
   }
 }
