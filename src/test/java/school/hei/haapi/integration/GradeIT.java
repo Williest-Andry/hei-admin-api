@@ -160,13 +160,13 @@ class GradeIT extends FacadeITMockedThirdParties {
   }
 
   @Test
-  void manager_get_final_grade_per_course_id_ok() throws ApiException {
+  void manager_get_final_grade_per_course_id_ok() throws ApiException, NullPointerException {
     TeachingApi managerApi = new TeachingApi(anApiClient(MANAGER1_TOKEN));
     AwardedCourse awardedCourse = awardedCourse1();
 
     List<StudentGrade> finalGradesForCourse =
-        managerApi.getStudentsFinalGradesByCourseId(awardedCourse.getCourse().getId(), "");
+        managerApi.getStudentsFinalGradesByCourseId(awardedCourse.getCourse().getId(), null);
 
-    assertTrue(true);
+    System.out.println(finalGradesForCourse);
   }
 }
