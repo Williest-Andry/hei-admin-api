@@ -1,0 +1,46 @@
+name: Notify Instatus about backend health
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:  
+
+jobs:
+  backend-health-check:
+    runs-on: ubuntu-latest
+    environment: instatus-environment
+    
+    steps:
+      - uses: actions/checkout@v4.1.6
+
+      - uses: actions/setup-java@v4.2.1
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          
+      - name: Run PaymentServiceTest
+        run: ./gradlew test --tests "school.hei.haapi.service.PaymentServiceTest"
+  
+      - name: Report success status to Instatus
+        if: ${{ success() }}
+        run: |
+            curl -X POST https://api.instatus.com/v2/components/ckf01fvnxywz60a35wdbn5gz5/incidents \
+              -H "Authorization: Bearer ${{ secrets.INSTATUS_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "Backend payment service PASSED ",
+                "message": "Payment service health checks is successful.",
+                "status": "operational"
+              }'
+  
+      - name: Report failure to Instatus
+        if: ${{ failure() }}
+        run: |
+            curl -X POST https://api.instatus.com/v1/components/<COMPONENT_ID>/incidents \
+              -H "Authorization: Bearer ${{ secrets.INSTATUS_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "Backend payment service FAILED ",
+                "message": "Payment service health checks failed.",
+                "status": "major_outage"
+              }'
